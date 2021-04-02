@@ -24,28 +24,29 @@ class ProdutoController extends Controller
             $client = new Client();
             $produto = new Produto;
 
-           $validate = Produto::where('url', '=', $request->url, 'and')->where('created_at', '<=', Carbon::now()->addHour(1)->format('Y-m-d H:i:s'))->count();
+            if (!empty($request->url)) {
 
-           if ($validate == 1) {
-               $produto = Produto::all('titulo', 'imagem', 'preco', 'descricao', 'url');
+                $validate = Produto::where('url', '=', $request->url, 'and')->where('created_at', '<=', Carbon::now()->addHour(1)->format('Y-m-d H:i:s'))->count();
 
-           } else {
-               $crawler = $client->request('GET', $request->url);
+                if ($validate == 1) {
+                    $produto = Produto::all('titulo', 'imagem', 'preco', 'descricao', 'url');
+                } else {
+                    $crawler = $client->request('GET', $request->url);
+                    $produto->titulo = $crawler->filter('h1 > span')->text();
+                    $produto->descricao = $crawler->filter('#productDescription_feature_div')->text();
+                    $produto->imagem = $crawler->filter('.a-button-text img')->eq(0)->attr('src');
+                    $produto->preco = str_replace(",", ".", str_replace("R$", "", $crawler->filter('#priceblock_ourprice')->text()));
+                    $produto->url = $request->url;
 
-               $produto->titulo = $crawler->filter('h1 > span')->text();
+                    $produto->save();
+                }
 
-               $produto->descricao = $crawler->filter('#productDescription_feature_div')->text();
+                return response()->json($produto);
+            } else {
+                return ['retorno' => 'ERRO', 'details' => "URL vazia!"];
+            }
 
-               $produto->imagem = $crawler->filter('.a-button-text img')->eq(0)->attr('src');
 
-               $produto->preco = str_replace(",", ".", str_replace("R$", "", $crawler->filter('#priceblock_ourprice')->text()));
-
-               $produto->url = $request->url;
-
-               $produto->save();
-           }
-
-           return response()->json($produto);
 
         } catch (\Exception $erro) {
             return ['retorno' => 'ERRO', 'details' => $erro];
