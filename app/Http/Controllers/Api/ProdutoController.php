@@ -11,7 +11,7 @@ use Goutte\Client;
 
 use Symfony\Component\DomCrawler\Crawler;
 
-use \NumberFormatter;
+use Carbon\Carbon;
 
 class ProdutoController extends Controller
 {
@@ -24,21 +24,28 @@ class ProdutoController extends Controller
             $client = new Client();
             $produto = new Produto;
 
-            $crawler = $client->request('GET', $request->url);
+           $validate = Produto::where('url', '=', $request->url, 'and')->where('created_at', '<=', Carbon::now()->addHour(1)->format('Y-m-d H:i:s'))->count();
 
-            $produto->titulo = $crawler->filter('h1 > span')->text();
+           if ($validate == 1) {
+               $produto = Produto::all('titulo', 'imagem', 'preco', 'descricao', 'url');
 
-            $produto->descricao = $crawler->filter('#productDescription_feature_div')->text();
+           } else {
+               $crawler = $client->request('GET', $request->url);
 
-            $produto->imagem = $crawler->filter('.a-button-text img')->eq(0)->attr('src');
+               $produto->titulo = $crawler->filter('h1 > span')->text();
 
-            $produto->preco = str_replace(",", ".", str_replace("R$", "", $crawler->filter('#priceblock_ourprice')->text()));
+               $produto->descricao = $crawler->filter('#productDescription_feature_div')->text();
 
-            $produto->url = $request->url;
+               $produto->imagem = $crawler->filter('.a-button-text img')->eq(0)->attr('src');
 
-            $produto->save();
+               $produto->preco = str_replace(",", ".", str_replace("R$", "", $crawler->filter('#priceblock_ourprice')->text()));
 
-            return response()->json($produto);
+               $produto->url = $request->url;
+
+               $produto->save();
+           }
+
+           return response()->json($produto);
 
         } catch (\Exception $erro) {
             return ['retorno' => 'ERRO', 'details' => $erro];
@@ -55,6 +62,17 @@ class ProdutoController extends Controller
     public function listById($id) {
 
         $produto = Produto::find($id);
+
+        if (empty($produto)) {
+            return ['retorno' => 'Produto não existe'];
+        }
+
+        return $produto;
+    }
+
+    public function listByUrl($url) {
+
+        $produto = Produto::find($url);
 
         if (empty($produto)) {
             return ['retorno' => 'Produto não existe'];
