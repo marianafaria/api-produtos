@@ -18,9 +18,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/status', 'App\Http\Controllers\Api\ProdutoController@status'); //APAGAR
-
-
 Route::namespace('App\Http\Controllers\Api')->group( function() {
 
     Route::post('/produtos/add', 'ProdutoController@add');

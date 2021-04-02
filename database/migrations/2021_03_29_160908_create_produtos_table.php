@@ -15,15 +15,11 @@ class CreateProdutosTable extends Migration
     {
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
-
-            $table->integer('categoria_id')->unsigned();// Id da tabela categorias
-            $table->foreign('categoria_id')->references('id')->on('categorias'); // foreign key
-
             $table->string('titulo');
             $table->string('imagem');
             $table->float('preco', 10, 2);
-            $table->string('descricao');
-            $table->string('url')->unique();
+            $table->longText('descricao');
+            $table->string('url');
 
             $table->timestamps();
         });
