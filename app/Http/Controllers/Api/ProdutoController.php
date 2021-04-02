@@ -26,7 +26,7 @@ class ProdutoController extends Controller
 
             if (!empty($request->url)) {
 
-                $validate = Produto::where('url', '=', $request->url, 'and')->where('created_at', '<=', Carbon::now()->addHour(1)->format('Y-m-d H:i:s'))->count();
+                $validate = Produto::where('url', '=', $request->url, 'and')->whereRaw("TIMESTAMPDIFF(MINUTE,created_at, NOW()) <= 60")->count();
 
                 if ($validate == 1) {
                     $produto = Produto::all('titulo', 'imagem', 'preco', 'descricao', 'url');
