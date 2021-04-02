@@ -8,11 +8,11 @@ Pré requisitos:
 
 Instalação após o clone do projeto:
 
-composer install
-composer dump
-criar arquivo .env (neste arquivo deve conter as informações do banco de dados)
-php artisan key:generate
-php artisan migrate
-php artisan serve (caso você já tenha um localhost configurado em sua maquina não é preciso executar o serve)
+ * composer install
+ * composer dump
+ * criar arquivo .env (neste arquivo deve conter as informações do banco de dados)
+ * php artisan key:generate
+ * php artisan migrate
+ * php artisan serve (caso você já tenha um localhost configurado em sua maquina não é preciso executar o serve)
 
 Link utilizado para teste da API: http://localhost/api-produtos/public/api/produtos/
