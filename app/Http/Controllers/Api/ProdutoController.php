@@ -20,16 +20,17 @@ class ProdutoController extends Controller
         try {
 
             //URL utilizada: https://www.amazon.com.br/Xiaomi-Vers%C3%A3o-Global-Lacrada-preta/dp/B07V822TVL
+            //Escolhi não apagar o registro já cadastrado para manter os dados para uma analise futura
 
             $client = new Client();
             $produto = new Produto;
 
             if (!empty($request->url)) {
 
-                $validate = Produto::where('url', '=', $request->url, 'and')->whereRaw("TIMESTAMPDIFF(MINUTE,created_at, NOW()) <= 60")->count();
+                $validate = Produto::select('id')->where('url', '=', $request->url, 'and')->whereRaw("TIMESTAMPDIFF(MINUTE,created_at, NOW()) <= 60")->get();
 
-                if ($validate == 1) {
-                    $produto = Produto::all('titulo', 'imagem', 'preco', 'descricao', 'url');
+                if ($validate->count() > 0) {
+                    $produto = Produto::find($validate);
                 } else {
                     $crawler = $client->request('GET', $request->url);
                     $produto->titulo = $crawler->filter('h1 > span')->text();
@@ -63,17 +64,6 @@ class ProdutoController extends Controller
     public function listById($id) {
 
         $produto = Produto::find($id);
-
-        if (empty($produto)) {
-            return ['retorno' => 'Produto não existe'];
-        }
-
-        return $produto;
-    }
-
-    public function listByUrl($url) {
-
-        $produto = Produto::find($url);
 
         if (empty($produto)) {
             return ['retorno' => 'Produto não existe'];
